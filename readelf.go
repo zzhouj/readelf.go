@@ -35,7 +35,7 @@ func main() {
 			if strings.Contains(arg, "S") {
 				isShowSection = true
 			}
-			if strings.Contains(arg, "S") {
+			if strings.Contains(arg, "l") {
 				isShowProgram = true
 			}
 		} else { // elf path
@@ -56,6 +56,9 @@ func main() {
 	if isShowSection || isShowAll {
 		showSections(elfFile.Sections)
 	}
+	if isShowProgram || isShowAll {
+		showProgram(elfFile.Progs)
+	}
 }
 
 func showHeader(file *elf.File) {
@@ -73,7 +76,7 @@ func showHeader(file *elf.File) {
 
 func showSections(sections []*elf.Section) {
 	fmt.Printf("ELF Sections:\n")
-	fmt.Printf("  [%2s] %-25s %-15s %-8s %-8s %-8s %2s %3s %3s %3s %3s\n", "Nr",
+	fmt.Printf("  [%2s] %-25s %-15s %-8s %-8s %-8s %2s %3s %3s %3s %4s\n", "Nr",
 		"Name",
 		"Type",
 		"Addr",
@@ -85,7 +88,7 @@ func showSections(sections []*elf.Section) {
 		"Inf",
 		"Al")
 	for i, section := range sections {
-		fmt.Printf("  [%2d] %-25s %-15s %08x %08x %08x %02x %3s %3d %3d %3d\n", i,
+		fmt.Printf("  [%2d] %-25s %-15s %08x %08x %08x %02x %3s %3d %3d %4x\n", i,
 			section.Name,
 			strings.Replace(section.Type.String(), "SHT_", "", -1),
 			section.Addr,
@@ -96,5 +99,29 @@ func showSections(sections []*elf.Section) {
 			section.Link,
 			section.Info,
 			section.Addralign)
+	}
+}
+
+func showProgram(progs []*elf.Prog) {
+	fmt.Printf("ELF Programs:\n")
+	fmt.Printf("  [%2s] %-20s %-8s %-8s %-8s %-8s %-8s %3s %5s\n", "Nr",
+		"Type",
+		"Offset",
+		"VirtAddr",
+		"PhysAddr",
+		"FileSiz",
+		"MemSiz",
+		"Flg",
+		"Align")
+	for i, prog := range progs {
+		fmt.Printf("  [%2d] %-20s %08x %08x %08x %08x %08x %3s %5d\n", i,
+			strings.Replace(prog.Type.String(), "PT_", "", -1),
+			prog.Off,
+			prog.Vaddr,
+			prog.Paddr,
+			prog.Filesz,
+			prog.Memsz,
+			strings.Replace(prog.Flags.String(), "PF_", "", -1),
+			prog.Align)
 	}
 }
