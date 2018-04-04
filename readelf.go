@@ -9,13 +9,15 @@ import (
 )
 
 var (
-	elfPath              string
-	isShowHeader         bool
-	isShowSection        bool
-	isShowProgram        bool
-	isShowSymbols        bool
-	isShowDynamicSymbols bool
-	isShowAll            bool
+	elfPath                 string
+	isShowHeader            bool
+	isShowSection           bool
+	isShowProgram           bool
+	isShowSymbols           bool
+	isShowDynamicSymbols    bool
+	isShowAll               bool
+	isShowImportedLibraries bool
+	isShowImportedSymbols   bool
 )
 
 func init() {
@@ -45,6 +47,12 @@ func main() {
 			}
 			if strings.Contains(arg, "d") {
 				isShowDynamicSymbols = true
+			}
+			if strings.Contains(arg, "I") {
+				isShowImportedLibraries = true
+			}
+			if strings.Contains(arg, "i") {
+				isShowImportedSymbols = true
 			}
 		} else { // elf path
 			elfPath = arg
@@ -82,15 +90,31 @@ func main() {
 		}
 		showSymbols(symbols, "DynamicSymbols")
 	}
+	if isShowImportedLibraries || isShowAll {
+		libraries, err := elfFile.ImportedLibraries()
+		if err != nil {
+			log.Fatal(err)
+		}
+		showImportedLibraries(libraries)
+	}
+	if isShowImportedSymbols || isShowAll {
+		symbols, err := elfFile.ImportedSymbols()
+		if err != nil {
+			log.Fatal(err)
+		}
+		showImportedSymbols(symbols)
+	}
 }
 
 func showUsage() {
-	fmt.Printf("Usage: readelf [-hSlsda] elfPath\n")
+	fmt.Printf("Usage: readelf [-hSlsdaIi] elfPath\n")
 	fmt.Printf("  -h: ELF File Header\n")
 	fmt.Printf("  -S: ELF Sections\n")
 	fmt.Printf("  -l: ELF Programs\n")
 	fmt.Printf("  -s: ELF Symbols\n")
 	fmt.Printf("  -d: ELF DynamicSymbols\n")
+	fmt.Printf("  -I: ELF ImportedLibraries\n")
+	fmt.Printf("  -i: ELF ImportedSymbols\n")
 	fmt.Printf("  -a: All above\n")
 }
 
@@ -161,8 +185,7 @@ func showProgram(progs []*elf.Prog) {
 
 func showSymbols(symbols []elf.Symbol, title string) {
 	fmt.Printf("ELF %s:\n", title)
-	fmt.Printf("  [%2s] %-30s\n"+
-		"       %-10s %-8s %-8s %3s %3s\n", "Nr",
+	fmt.Printf("  [%2s] %-30s %-10s %-8s %-8s %3s %3s\n", "Nr",
 		"Name",
 		"Section",
 		"Value",
@@ -170,8 +193,7 @@ func showSymbols(symbols []elf.Symbol, title string) {
 		"Inf",
 		"Oth")
 	for i, symbol := range symbols {
-		fmt.Printf("  [%2d] %-30s\n"+
-			"       %-10s %08x %08x %3d %3d\n", i,
+		fmt.Printf("  [%2d] %-30s %-10s %08x %08x %3d %3d\n", i,
 			symbol.Name,
 			strings.Replace(symbol.Section.String(), "SHN_", "", -1),
 			symbol.Value,
@@ -179,5 +201,17 @@ func showSymbols(symbols []elf.Symbol, title string) {
 			symbol.Info,
 			symbol.Other)
 	}
+}
 
+func showImportedLibraries(libraries []string) {
+	fmt.Printf("ELF ImportedLibraries:\n")
+	fmt.Printf("  [%2s] %s\n", "Nr", "Name")
+	for i, library := range libraries {
+		fmt.Printf("  [%2d] %-30s\n", i, library)
+	}
+}
+
+func showImportedSymbols(symbols []elf.ImportedSymbol) {
+	fmt.Printf("ELF ImportedSymbols:\n")
+	// TODO
 }
