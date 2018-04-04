@@ -1,4 +1,4 @@
-A lite version *readelf* written by golang
+A lite version **readelf** written by golang
 
 ```
 Usage: readelf [-hSlsdaIi] elfPath
