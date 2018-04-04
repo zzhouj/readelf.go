@@ -9,11 +9,13 @@ import (
 )
 
 var (
-	elfPath       string
-	isShowHeader  bool
-	isShowSection bool
-	isShowProgram bool
-	isShowAll     bool
+	elfPath              string
+	isShowHeader         bool
+	isShowSection        bool
+	isShowProgram        bool
+	isShowSymbols        bool
+	isShowDynamicSymbols bool
+	isShowAll            bool
 )
 
 func init() {
@@ -38,6 +40,12 @@ func main() {
 			if strings.Contains(arg, "l") {
 				isShowProgram = true
 			}
+			if strings.Contains(arg, "s") {
+				isShowSymbols = true
+			}
+			if strings.Contains(arg, "d") {
+				isShowDynamicSymbols = true
+			}
 		} else { // elf path
 			elfPath = arg
 		}
@@ -58,6 +66,20 @@ func main() {
 	}
 	if isShowProgram || isShowAll {
 		showProgram(elfFile.Progs)
+	}
+	if isShowSymbols || isShowAll {
+		symbols, err := elfFile.Symbols()
+		if err != nil {
+			log.Fatal(err)
+		}
+		showSymbols(symbols, "Symbols")
+	}
+	if isShowDynamicSymbols || isShowAll {
+		symbols, err := elfFile.DynamicSymbols()
+		if err != nil {
+			log.Fatal(err)
+		}
+		showSymbols(symbols, "DynamicSymbols")
 	}
 }
 
@@ -124,4 +146,27 @@ func showProgram(progs []*elf.Prog) {
 			strings.Replace(prog.Flags.String(), "PF_", "", -1),
 			prog.Align)
 	}
+}
+
+func showSymbols(symbols []elf.Symbol, title string) {
+	fmt.Printf("ELF %s:\n", title)
+	fmt.Printf("  [%2s] %-30s\n"+
+		"       %-10s %-8s %-8s %3s %3s\n", "Nr",
+		"Name",
+		"Section",
+		"Value",
+		"Size",
+		"Inf",
+		"Oth")
+	for i, symbol := range symbols {
+		fmt.Printf("  [%2d] %-30s\n"+
+			"       %-10s %08x %08x %3d %3d\n", i,
+			symbol.Name,
+			strings.Replace(symbol.Section.String(), "SHN_", "", -1),
+			symbol.Value,
+			symbol.Size,
+			symbol.Info,
+			symbol.Other)
+	}
+
 }
