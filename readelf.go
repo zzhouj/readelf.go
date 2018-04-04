@@ -51,7 +51,8 @@ func main() {
 		}
 	}
 	if elfPath == "" {
-		log.Fatal("Usage: readelf [-hS] elfPath\n")
+		showUsage()
+		os.Exit(1)
 	}
 	elfFile, err := elf.Open(elfPath)
 	if err != nil {
@@ -81,6 +82,16 @@ func main() {
 		}
 		showSymbols(symbols, "DynamicSymbols")
 	}
+}
+
+func showUsage() {
+	fmt.Printf("Usage: readelf [-hSlsda] elfPath\n")
+	fmt.Printf("  -h: ELF File Header\n")
+	fmt.Printf("  -S: ELF Sections\n")
+	fmt.Printf("  -l: ELF Programs\n")
+	fmt.Printf("  -s: ELF Symbols\n")
+	fmt.Printf("  -d: ELF DynamicSymbols\n")
+	fmt.Printf("  -a: All above\n")
 }
 
 func showHeader(file *elf.File) {
