@@ -213,5 +213,14 @@ func showImportedLibraries(libraries []string) {
 
 func showImportedSymbols(symbols []elf.ImportedSymbol) {
 	fmt.Printf("ELF ImportedSymbols:\n")
-	// TODO
+	fmt.Printf("  [%2s] %-30s %-10s %s\n", "Nr",
+		"Name",
+		"Version",
+		"Library")
+	for i, symbol := range symbols {
+		fmt.Printf("  [%2d] %-30s %-10s %s\n", i,
+			symbol.Name,
+			symbol.Version,
+			symbol.Library)
+	}
 }
