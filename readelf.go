@@ -27,7 +27,7 @@ func main() {
 		if i == 0 {
 			continue
 		}
-		if strings.HasPrefix(arg, "-") { // options
+		if strings.HasPrefix(arg, "-") { // flags
 			if strings.Contains(arg, "a") {
 				isShowAll = true
 			}
